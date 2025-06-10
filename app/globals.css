@@ -10,6 +10,7 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
   .animate-progress {
     animation: progress 3s linear;
   }
@@ -19,6 +20,7 @@ body {
   0% {
     width: 0%;
   }
+
   100% {
     width: 100%;
   }
@@ -29,6 +31,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -39,6 +42,7 @@ body {
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -50,6 +54,7 @@ body {
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -61,6 +66,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -68,10 +74,12 @@ body {
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
@@ -81,6 +89,7 @@ body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -90,6 +99,7 @@ body {
   from {
     width: 0%;
   }
+
   to {
     width: var(--target-width);
   }
@@ -100,6 +110,7 @@ body {
     opacity: 0;
     transform: scale(0.8);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -190,6 +201,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -230,6 +242,7 @@ body {
   * {
     border-color: hsl(var(--border));
   }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
@@ -237,12 +250,109 @@ body {
 }
 
 /* === FIX: Radix UI Select dropdown causes scroll jump === */
+/* Enhanced scroll jump fixes - Add to globals.css */
+
+/* === COMPREHENSIVE FIX: Radix UI Select dropdown scroll jump === */
 [data-radix-popper-content-wrapper] {
+  will-change: transform;
+  transform: translateZ(0);
+  position: fixed !important;
+}
+
+/* Fix for all Radix popover/select content */
+[data-radix-select-content],
+[data-radix-popover-content],
+[data-radix-dropdown-menu-content] {
+  will-change: transform;
+  transform: translateZ(0);
+  position: fixed !important;
+}
+
+/* Prevent scroll anchoring globally */
+html {
+  overflow-anchor: none;
+  scroll-behavior: auto;
+  /* Disable smooth scrolling that can cause jumps */
+}
+
+/* Prevent layout shifts during form interactions */
+.form-container {
+  contain: layout style;
+}
+
+/* Stabilize select triggers */
+[data-radix-select-trigger] {
+  will-change: auto;
+  transform: translateZ(0);
+}
+
+/* Fix for dynamic content containers */
+.dynamic-content-container {
+  will-change: contents;
+  min-height: 0;
+  /* Prevent unnecessary height calculations */
+}
+
+/* Prevent reflow during state changes */
+.form-section {
+  contain: layout;
+}
+
+/* Fix for animated elements */
+.animate-slideInUp,
+.animate-slideInLeft,
+.animate-slideInRight,
+.animate-fadeIn {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Prevent scroll jump on focus */
+input:focus,
+textarea:focus,
+select:focus,
+[role="combobox"]:focus {
+  scroll-margin: 0;
+}
+
+/* Fix for modal/dialog content */
+[data-radix-dialog-content],
+[data-radix-alert-dialog-content] {
+  position: fixed !important;
   will-change: transform;
   transform: translateZ(0);
 }
 
-/* Optional: prevent auto-scroll anchoring on dropdown focus */
-html {
-  overflow-anchor: none;
+/* Stabilize form grid layouts */
+.grid {
+  contain: layout;
+}
+
+/* Fix for file upload areas */
+input[type="file"]+label {
+  will-change: auto;
+  contain: layout style;
+}
+
+/* Prevent unwanted scrolling during dropdown interactions */
+body:has([data-radix-select-content]) {
+  overflow: hidden;
+}
+
+/* Reset overflow when dropdown is closed */
+body:not(:has([data-radix-select-content])) {
+  overflow: auto;
+}
+
+/* Fix for conditional rendering containers */
+.conditional-render {
+  contain: layout style;
+  min-height: 0;
+}
+
+/* Stabilize button interactions */
+button:focus,
+button:active {
+  transform: translateZ(0);
+  will-change: auto;
 }
