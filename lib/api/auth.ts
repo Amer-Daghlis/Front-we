@@ -85,3 +85,22 @@ export async function getCurrentUser() {
 
   return response.json()
 }
+
+
+export async function getLawyers(){
+  const token = getToken()
+  if (!token) throw new Error("No token found")
+
+const response = await fetch(`${API_BASE_URL}/users/lawyer`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user info")
+  }
+
+  return response.json()
+}
