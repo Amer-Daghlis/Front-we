@@ -88,20 +88,30 @@ export async function updateCaseStatus(caseId: string, newStatus: string) {
 export type CaseCreateData = {
   title: string
   description: string
-  violationTypes: string[]
+  violation_types: string[]
   status: string
   priority: string
-  location: string
-  dateOccurred: string
-  dateReported: string
+  location: {
+    country: string
+    region: string
+    coordinates: {
+      type: string
+      coordinates: [number, number]
+    }
+  }
+  date_occurred: string
+  date_reported: string
   victims: string[]
   perpetrators: { name: string; type: string }[]
-  candidateLawyers: string[]
+  candidate_lawyers: string[]
   evidenceFiles: File[]
 }
 
 export async function createCase(caseData: CaseCreateData, files: File[]) {
   const token = localStorage.getItem("accessToken")
+
+  console.log("Creating case with data:", caseData)
+  console.log("Files to upload:", files.length)
 
   const formData = new FormData()
   formData.append("case_model", JSON.stringify(caseData))
@@ -120,9 +130,12 @@ export async function createCase(caseData: CaseCreateData, files: File[]) {
 
   if (!response.ok) {
     const error = await response.json()
+    console.error("Case creation failed:", error)
     throw new Error(error.detail || "Failed to create case")
   }
 
-  return response.json()
+  const result = await response.json()
+  console.log("Case created successfully:", result)
+  return result
 }
 

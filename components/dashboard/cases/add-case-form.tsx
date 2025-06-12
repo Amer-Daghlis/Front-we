@@ -35,15 +35,22 @@ import { Combobox } from "@headlessui/react";
 const initialFormData: CaseCreateData = {
   title: "",
   description: "",
-  violationTypes: [],
+  violation_types: [],
   status: "",
   priority: "",
-  location: "",
-  dateOccurred: "",
-  dateReported: "",
+  location: {
+    country: "",
+    region: "",
+    coordinates: {
+      type: "Point",
+      coordinates: [34.4667, 31.5000],
+    },
+  },
+  date_occurred: "",
+  date_reported: "",
   victims: [],
   perpetrators: [],
-  candidateLawyers: [],
+  candidate_lawyers: [],
   evidenceFiles: [],
 };
 
@@ -82,20 +89,16 @@ const CaseDetailsSection = memo(
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       onChange(name as keyof CaseCreateData, value);
-    };
-
-    const handleViolationTypeChange = (violation: string, checked: boolean) => {
+    };    const handleViolationTypeChange = (violation: string, checked: boolean) => {
       const newTypes = checked
-        ? [...data.violationTypes, violation]
-        : data.violationTypes.filter((v: string) => v !== violation);
-      onChange("violationTypes", newTypes);
+        ? [...data.violation_types, violation]
+        : data.violation_types.filter((v: string) => v !== violation);
+      onChange("violation_types", newTypes);
     };
 
     const handleLocationChange = (field: "country" | "region", value: string) => {
       onChange("location", { ...data.location, [field]: value });
-    };
-
-    const handleDateChange = (field: "dateOccurred" | "dateReported", value: string) => {
+    };    const handleDateChange = (field: "date_occurred" | "date_reported", value: string) => {
       onChange(field, value);
     };
 
@@ -130,31 +133,44 @@ const CaseDetailsSection = memo(
         <div className="space-y-2">
           <Label htmlFor="violation_types">Violation Types</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-            {violationTypeOptions.map((type) => (
-              <div key={type} className="flex items-center space-x-2.5">
+            {violationTypeOptions.map((type) => (              <div key={type} className="flex items-center space-x-2.5">
                 <Checkbox
                   id={`violation-${type}`}
-                  checked={data.violationTypes.includes(type)}
-                  onCheckedChange={(checked) => handleViolationTypeChange(type, checked)}
+                  checked={data.violation_types.includes(type)}
+                  onCheckedChange={(checked) => handleViolationTypeChange(type, checked as boolean)}
                 />
                 <Label htmlFor={`violation-${type}`}>{type}</Label>
-              </div>
-            ))}
+              </div>            ))}
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="status">Case Status</Label>
+          <Select
+            value={data.status}
+            onValueChange={(value) => onChange("status", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select case status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="under_investigation">Under Investigation</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="escalated">Escalated</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <fieldset className="space-y-6 border-t border-slate-200 dark:border-slate-700 pt-6 mt-6">
           <legend className="text-lg font-semibold text-slate-700 dark:text-slate-200 px-1 mb-3 flex items-center">
             <MapPin className="w-6 h-6 mr-2 opacity-80" />
             Location
           </legend>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">            <div className="space-y-2">
               <Label htmlFor="location.country">Country</Label>
               <Input
                 id="location.country"
-                name="location.country"
+                name="country"
                 value={data.location.country}
-                onChange={handleInputChange}
+                onChange={(e) => handleLocationChange("country", e.target.value)}
                 required
                 placeholder="Enter country"
               />
@@ -163,27 +179,26 @@ const CaseDetailsSection = memo(
               <Label htmlFor="location.region">Region</Label>
               <Input
                 id="location.region"
-                name="location.region"
+                name="region"
                 value={data.location.region}
-                onChange={handleInputChange}
+                onChange={(e) => handleLocationChange("region", e.target.value)}
                 required
                 placeholder="Enter region"
               />
             </div>
           </div>
-        </fieldset>
-        <div className="space-y-2">
+        </fieldset>        <div className="space-y-2">
           <Label htmlFor="date_occurred">Date Occurred</Label>
           <DatePicker
-            date={data.dateOccurred ? new Date(data.dateOccurred) : null}
-            onChange={(date) => handleDateChange("dateOccurred", date.toISOString())}
+            date={data.date_occurred ? new Date(data.date_occurred) : undefined}
+            setDate={(date: Date | undefined) => handleDateChange("date_occurred", date ? date.toISOString() : "")}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="date_reported">Date Reported</Label>
           <DatePicker
-            date={data.dateReported ? new Date(data.dateReported) : null}
-            onChange={(date) => handleDateChange("dateReported", date.toISOString())}
+            date={data.date_reported ? new Date(data.date_reported) : undefined}
+            setDate={(date: Date | undefined) => handleDateChange("date_reported", date ? date.toISOString() : "")}
           />
         </div>
       </SectionCard>
@@ -520,7 +535,18 @@ export function AddCaseForm() {
   const router = useRouter();
 
   const handleCaseDetailsChange = useCallback((field: keyof CaseCreateData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      if (field === "location") {
+        return {
+          ...prev,
+          location: {
+            ...prev.location,
+            ...value,
+          },
+        };
+      }
+      return { ...prev, [field]: value };
+    });
   }, []);
 
   const handleFileChange = (files: File[]) => {
@@ -535,16 +561,27 @@ export function AddCaseForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
-
-    try {
-      const caseData: CaseCreateData = {
+    setSuccess(null);    try {      const caseData: CaseCreateData = {
         ...formData,
         victims: selectedVictims,
         perpetrators,
-        candidateLawyers,
+        candidate_lawyers: candidateLawyers,
         priority,
+        location: {
+          country: formData.location?.country || "",
+          region: formData.location?.region || "",
+          coordinates: {
+            type: "Point",
+            coordinates: [34.4667, 31.5000],
+          },
+        },
+        status: formData.status || "under_investigation",
+        date_occurred: formData.date_occurred || new Date().toISOString(),
+        date_reported: formData.date_reported || new Date().toISOString(),
       };
+
+      console.log("Submitting case data:", caseData);
+      console.log("Files to upload:", filesToUpload);
 
       await createCase(caseData, filesToUpload);
 
