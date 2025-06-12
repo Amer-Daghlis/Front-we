@@ -1,6 +1,13 @@
+import { getToken } from "./auth"
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
-export async function getAllCases(token: string) {
+export async function getAllCases() {
+  const token = getToken()
+  if (!token) {
+    throw new Error("Authentication required. Please log in.")
+  }
+
   const res = await fetch(`${API_BASE_URL}/case/`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -10,6 +17,45 @@ export async function getAllCases(token: string) {
   if (!res.ok) {
     const error = await res.json()
     throw new Error(error.detail || "Failed to fetch cases")
+  }
+
+  return res.json()
+}
+
+export async function getMyCases() {
+  const token = getToken()
+  if (!token) {
+    throw new Error("Authentication required. Please log in.")
+  }
+
+  const res = await fetch(`${API_BASE_URL}/case/my-cases`, {    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!res.ok) {
+    const error = await res.json()
+    throw new Error(error.detail || "Failed to fetch your cases")
+  }
+
+  return res.json()
+}
+
+export async function getCasesNeedingLawyers() {
+  const token = getToken()
+  if (!token) {
+    throw new Error("Authentication required. Please log in.")
+  }
+
+  const res = await fetch(`${API_BASE_URL}/case/cases-need-lawyers`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!res.ok) {
+    const error = await res.json()
+    throw new Error(error.detail || "Failed to fetch cases needing lawyers")
   }
 
   return res.json()

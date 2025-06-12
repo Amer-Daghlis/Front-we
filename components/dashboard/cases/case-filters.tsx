@@ -21,8 +21,8 @@ interface CaseFiltersProps {
   initialFilters?: Partial<CaseFilterValues>
 }
 
-const caseStatuses: CaseStatus[] = ["Open", "In Progress", "Pending Review", "Resolved", "Closed"]
-const casePriorities: CasePriority[] = ["High", "Medium", "Low"]
+const caseStatuses: CaseStatus[] = ["under_investigation", "resolved", "closed", "pending"]
+const casePriorities: CasePriority[] = ["high", "medium", "low"]
 
 export function CaseFilters({ onFiltersChange, initialFilters = {} }: CaseFiltersProps) {
   const [searchTerm, setSearchTerm] = React.useState(initialFilters.searchTerm || "")
