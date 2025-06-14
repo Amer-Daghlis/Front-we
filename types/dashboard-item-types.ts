@@ -10,23 +10,41 @@ export interface Victim {
 }
 
 
-export type CaseStatus = "Open" | "In Progress" | "Pending Review" | "Resolved" | "Closed"
-export type CasePriority = "High" | "Medium" | "Low"
+export type CaseStatus = "under_investigation" | "resolved" | "closed" | "pending"
+export type CasePriority = "high" | "medium" | "low"
+
+export interface CaseLocation {
+  country: string
+  region: string
+  coordinates: {
+    type: "Point"
+    coordinates: [number, number]
+  }
+}
+
+export interface Perpetrator {
+  name: string
+  type: "individual" | "organization"
+}
 
 export interface Case {
-  id: string
+  _id: string
+  case_id: string
   title: string
   description: string
-  dateReported: string // ISO string format for dates
+  violation_types: string[]
   status: CaseStatus
   priority: CasePriority
-  location: string
-  assignedLawyer?: string
-  organizationId?: string
-  evidenceCount: number
-  victimCount: number
-  victims?: Victim[] // Uses the canonical Victim type above
-  lastUpdated: string
+  location: CaseLocation
+  date_occurred: string
+  date_reported: string
+  victims: string[]
+  perpetrators: Perpetrator[]
+  evidence: string[]
+  created_by: string
+  candidate_lawyers?: string[] | null
+  created_at: string
+  updated_at: string
 }
 
 export interface CaseDetail extends Case {

@@ -1,5 +1,5 @@
 "use client"
-import { useState, type ChangeEvent, type FormEvent } from "react"
+import { useState, type ChangeEvent, type FormEvent, useRef, useCallback, useMemo } from "react"
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
@@ -80,7 +80,28 @@ export function AddVictimForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Ref to track scroll position
+  const formRef = useRef<HTMLDivElement>(null)
+  const scrollPositionRef = useRef<number>(0)
+
+  // Preserve scroll position during state updates
+  const preserveScrollPosition = useCallback(() => {
+    if (formRef.current) {
+      scrollPositionRef.current = window.scrollY
+    }
+  }, [])
+
+  const restoreScrollPosition = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (scrollPositionRef.current !== undefined) {
+        window.scrollTo(0, scrollPositionRef.current)
+      }
+    })
+  }, [])
+
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    preserveScrollPosition()
+
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
 
@@ -98,9 +119,14 @@ export function AddVictimForm() {
       })
       return newData
     })
-  }
 
-  const handleSelectChange = (name: string, value: string) => {
+    // Restore scroll position after state update
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleSelectChange = useCallback((name: string, value: string) => {
+    preserveScrollPosition()
+
     const keys = name.split(".")
     setFormData((prev) => {
       const newData = JSON.parse(JSON.stringify(prev))
@@ -115,10 +141,14 @@ export function AddVictimForm() {
       })
       return newData
     })
-  }
 
-  const handleCheckboxChange = (name: string, checked: boolean | "indeterminate") => {
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleCheckboxChange = useCallback((name: string, checked: boolean | "indeterminate") => {
     if (typeof checked === "boolean") {
+      preserveScrollPosition()
+
       const keys = name.split(".")
       setFormData((prev) => {
         const newData = JSON.parse(JSON.stringify(prev))
@@ -133,11 +163,15 @@ export function AddVictimForm() {
         })
         return newData
       })
-    }
-  }
 
-  const handleAddThreat = () => {
+      restoreScrollPosition()
+    }
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleAddThreat = useCallback(() => {
     if (currentThreat.trim() !== "") {
+      preserveScrollPosition()
+
       setFormData((prev) => ({
         ...prev,
         risk_assessment: {
@@ -146,10 +180,14 @@ export function AddVictimForm() {
         },
       }))
       setCurrentThreat("")
-    }
-  }
 
-  const handleRemoveThreat = (index: number) => {
+      restoreScrollPosition()
+    }
+  }, [currentThreat, preserveScrollPosition, restoreScrollPosition])
+
+  const handleRemoveThreat = useCallback((index: number) => {
+    preserveScrollPosition()
+
     setFormData((prev) => ({
       ...prev,
       risk_assessment: {
@@ -157,38 +195,56 @@ export function AddVictimForm() {
         threats: prev.risk_assessment.threats.filter((_, i) => i !== index),
       },
     }))
-  }
 
-  const handleSupportServiceChange = (index: number, field: string, value: string) => {
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleSupportServiceChange = useCallback((index: number, field: string, value: string) => {
+    preserveScrollPosition()
+
     setFormData((prev) => {
       const newSupportServices = prev.support_services.map((service, i) =>
         i === index ? { ...service, [field]: value } : service,
       )
       return { ...prev, support_services: newSupportServices }
     })
-  }
 
-  const handleSupportServiceSelectChange = (index: number, field: "type" | "status", value: string) => {
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleSupportServiceSelectChange = useCallback((index: number, field: "type" | "status", value: string) => {
+    preserveScrollPosition()
+
     setFormData((prev) => {
       const newSupportServices = [...prev.support_services]
       newSupportServices[index] = { ...newSupportServices[index], [field]: value }
       return { ...prev, support_services: newSupportServices }
     })
-  }
 
-  const handleAddSupportService = () => {
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleAddSupportService = useCallback(() => {
+    preserveScrollPosition()
+
     setFormData((prev) => ({
       ...prev,
       support_services: [...prev.support_services, { ...initialSupportService }],
     }))
-  }
 
-  const handleRemoveSupportService = (index: number) => {
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
+
+  const handleRemoveSupportService = useCallback((index: number) => {
+    preserveScrollPosition()
+
     setFormData((prev) => ({
       ...prev,
       support_services: prev.support_services.filter((_, i) => i !== index),
     }))
-  }
+
+    restoreScrollPosition()
+  }, [preserveScrollPosition, restoreScrollPosition])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -219,13 +275,14 @@ export function AddVictimForm() {
     }
   }
 
+  // Memoized components to prevent unnecessary re-renders
   const SectionCard: React.FC<{
     title: string
     description: string
     icon: React.ElementType
     children: React.ReactNode
-  }> = ({ title, description, icon: Icon, children }) => (
-    <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out border-l-4 border-blue-500 dark:border-blue-400 overflow-hidden">
+  }> = useMemo(() => ({ title, description, icon: Icon, children }) => (
+    <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out border-l-4 border-blue-500 dark:border-blue-400 overflow-hidden form-section">
       <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-6">
         <div className="flex items-center space-x-4">
           <div className="p-3 bg-blue-500 dark:bg-blue-400 rounded-full shadow-md">
@@ -239,10 +296,112 @@ export function AddVictimForm() {
       </CardHeader>
       <CardContent className="p-6 md:p-8 space-y-6 bg-white dark:bg-slate-800/30">{children}</CardContent>
     </Card>
-  )
+  ), [])
+
+  // Memoized threat list to prevent unnecessary re-renders
+  const threatsList = useMemo(() => (
+    formData.risk_assessment.threats.map((threat, index) => (
+      <div
+        key={`threat-${index}-${threat}`} // Stable key
+        className="flex justify-between items-center text-sm p-3 bg-slate-100 dark:bg-slate-700/60 rounded-lg shadow-sm"
+      >
+        <span className="text-slate-700 dark:text-slate-200">{threat}</span>
+        <Button
+          type="button"
+          onClick={() => handleRemoveThreat(index)}
+          variant="ghost"
+          size="icon"
+          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+          aria-label={`Remove threat: ${threat}`}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    ))
+  ), [formData.risk_assessment.threats, handleRemoveThreat])
+
+  // Memoized support services to prevent unnecessary re-renders
+  const supportServicesList = useMemo(() => (
+    formData.support_services.map((service, index) => (
+      <div
+        key={`service-${index}`} // Use index as key since services don't have unique IDs
+        className="space-y-4 p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-700/40 shadow-md relative mb-4 dynamic-content-container"
+      >
+        <Button
+          type="button"
+          onClick={() => handleRemoveSupportService(index)}
+          variant="ghost"
+          size="icon"
+          className="absolute top-3 right-3 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
+          aria-label={`Remove service ${index + 1}`}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+        <p className="text-md font-semibold text-blue-600 dark:text-blue-400">Service #{index + 1}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              id: "type",
+              label: "Service Type",
+              options: supportServiceTypeOptions,
+              placeholder: "Select service type",
+            },
+            { id: "provider", label: "Provider", placeholder: "e.g., HRM Legal Team" },
+            {
+              id: "status",
+              label: "Status",
+              options: supportServiceStatusOptions,
+              placeholder: "Select status",
+            },
+          ].map((item) => (
+            <div key={item.id} className="space-y-1">
+              <Label
+                htmlFor={`support_services.${index}.${item.id}`}
+                className="text-xs font-medium text-slate-600 dark:text-slate-400"
+              >
+                {item.label}
+              </Label>
+              {item.options ? (
+                <Select
+                  name={`support_services.${index}.${item.id}`}
+                  value={service[item.id as keyof typeof service]}
+                  onValueChange={(value) =>
+                    handleSupportServiceSelectChange(index, item.id as "type" | "status", value)
+                  }
+                >
+                  <SelectTrigger
+                    id={`support_services.${index}.${item.id}`}
+                    className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+                  >
+                    <SelectValue placeholder={item.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {item.options.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  id={`support_services.${index}.${item.id}`}
+                  name={`support_services.${index}.${item.id}`}
+                  value={service[item.id as keyof typeof service]}
+                  onChange={(e) => handleSupportServiceChange(index, item.id, e.target.value)}
+                  placeholder={item.placeholder}
+                  className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    ))
+  ), [formData.support_services, handleSupportServiceSelectChange, handleSupportServiceChange, handleRemoveSupportService])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900 py-8 md:py-12">
+    <div ref={formRef} className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900 py-8 md:py-12 form-container">
       <div className="max-w-4xl mx-auto px-4 space-y-10">
         <div className="text-center space-y-3">
           <Sparkles className="h-12 w-12 text-blue-500 dark:text-blue-400 mx-auto animate-pulse" />
@@ -497,25 +656,8 @@ export function AddVictimForm() {
                 </Button>
               </div>
               {formData.risk_assessment.threats.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {formData.risk_assessment.threats.map((threat, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center text-sm p-3 bg-slate-100 dark:bg-slate-700/60 rounded-lg shadow-sm"
-                    >
-                      <span className="text-slate-700 dark:text-slate-200">{threat}</span>
-                      <Button
-                        type="button"
-                        onClick={() => handleRemoveThreat(index)}
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                        aria-label={`Remove threat: ${threat}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                <div className="mt-4 space-y-2 conditional-render">
+                  {threatsList}
                 </div>
               )}
             </div>
@@ -537,82 +679,9 @@ export function AddVictimForm() {
                 <PlusCircle className="h-4 w-4 mr-2" /> Add Service
               </Button>
             </div>
-            {formData.support_services.map((service, index) => (
-              <div
-                key={index}
-                className="space-y-4 p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-700/40 shadow-md relative mb-4"
-              >
-                <Button
-                  type="button"
-                  onClick={() => handleRemoveSupportService(index)}
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-3 right-3 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
-                  aria-label={`Remove service ${index + 1}`}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-                <p className="text-md font-semibold text-blue-600 dark:text-blue-400">Service #{index + 1}</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    {
-                      id: "type",
-                      label: "Service Type",
-                      options: supportServiceTypeOptions,
-                      placeholder: "Select service type",
-                    },
-                    { id: "provider", label: "Provider", placeholder: "e.g., HRM Legal Team" },
-                    {
-                      id: "status",
-                      label: "Status",
-                      options: supportServiceStatusOptions,
-                      placeholder: "Select status",
-                    },
-                  ].map((item) => (
-                    <div key={item.id} className="space-y-1">
-                      <Label
-                        htmlFor={`support_services.${index}.${item.id}`}
-                        className="text-xs font-medium text-slate-600 dark:text-slate-400"
-                      >
-                        {item.label}
-                      </Label>
-                      {item.options ? (
-                        <Select
-                          name={`support_services.${index}.${item.id}`}
-                          value={service[item.id as keyof typeof service]}
-                          onValueChange={(value) =>
-                            handleSupportServiceSelectChange(index, item.id as "type" | "status", value)
-                          }
-                        >
-                          <SelectTrigger
-                            id={`support_services.${index}.${item.id}`}
-                            className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
-                          >
-                            <SelectValue placeholder={item.placeholder} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {item.options.map((opt) => (
-                              <SelectItem key={opt} value={opt}>
-                                {opt}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          id={`support_services.${index}.${item.id}`}
-                          name={`support_services.${index}.${item.id}`}
-                          value={service[item.id as keyof typeof service]}
-                          onChange={(e) => handleSupportServiceChange(index, item.id, e.target.value)}
-                          placeholder={item.placeholder}
-                          className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+            <div className="conditional-render">
+              {supportServicesList}
+            </div>
             {formData.support_services.length === 0 && (
               <p className="text-sm text-center text-slate-500 dark:text-slate-400 py-6 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg">
                 No support services added yet. Click "Add Service" to include one.

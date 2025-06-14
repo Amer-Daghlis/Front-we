@@ -18,7 +18,7 @@ export function CaseCard({ caseItem, userType, onStatusUpdate }: CaseCardProps) 
   const router = useRouter()
 
   const handleCardClick = () => {
-    router.push(`/case/${caseItem.id}`)
+    router.push(`/case/${caseItem.case_id}`)
   }
 
   const handleActionClick = (e: React.MouseEvent, action: () => void) => {
@@ -30,20 +30,20 @@ export function CaseCard({ caseItem, userType, onStatusUpdate }: CaseCardProps) 
   const canUpdateStatus = (userType === "lawyer" || userType === "admin") && onStatusUpdate
 
   const priorityColor =
-    caseItem.priority === "High"
+    caseItem.priority === "high"
       ? "bg-red-500/10 text-red-700 border-red-500/30"
-      : caseItem.priority === "Medium"
+      : caseItem.priority === "medium"
         ? "bg-orange-500/10 text-orange-700 border-orange-500/30"
         : "bg-yellow-500/10 text-yellow-700 border-yellow-500/30"
 
   const statusColor =
-    caseItem.status === "Open"
+    caseItem.status === "under_investigation"
       ? "bg-blue-500/10 text-blue-700 border-blue-500/30"
-      : caseItem.status === "In Progress"
-        ? "bg-purple-500/10 text-purple-700 border-purple-500/30"
-        : caseItem.status === "Resolved"
-          ? "bg-green-500/10 text-green-700 border-green-500/30"
-          : "bg-gray-500/10 text-gray-700 border-gray-500/30" // For Closed or other states
+      : caseItem.status === "resolved"
+        ? "bg-green-500/10 text-green-700 border-green-500/30"
+        : caseItem.status === "closed"
+          ? "bg-gray-500/10 text-gray-700 border-gray-500/30"
+          : "bg-purple-500/10 text-purple-700 border-purple-500/30" // For pending or other states
 
   return (
     <Card
@@ -58,30 +58,30 @@ export function CaseCard({ caseItem, userType, onStatusUpdate }: CaseCardProps) 
             {caseItem.priority} Priority
           </Badge>
         </div>
-        <CardDescription className="text-xs text-muted-foreground">{caseItem.id}</CardDescription>
+        <CardDescription className="text-xs text-muted-foreground">{caseItem.case_id}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow p-5 space-y-4 text-sm">
         <div className="flex items-center text-gray-600">
           <Briefcase className="w-4 h-4 mr-3 flex-shrink-0 text-primary/80" />
           <span className="font-medium mr-2">Status:</span>
           <Badge variant="outline" className={`px-2.5 py-0.5 text-xs ${statusColor}`}>
-            {caseItem.status}
+            {caseItem.status.replace("_", " ")}
           </Badge>
         </div>
         <div className="flex items-center text-gray-600">
           <MapPin className="w-4 h-4 mr-3 flex-shrink-0 text-primary/80" />
           <span className="font-medium mr-2">Location:</span>
-          <span className="truncate">{caseItem.location}</span>
+          <span className="truncate">{caseItem.location.country}, {caseItem.location.region}</span>
         </div>
         <div className="flex items-center text-gray-600">
           <CalendarDays className="w-4 h-4 mr-3 flex-shrink-0 text-primary/80" />
           <span className="font-medium mr-2">Reported:</span>
-          <span>{new Date(caseItem.dateReported).toLocaleDateString()}</span>
+          <span>{new Date(caseItem.date_reported).toLocaleDateString()}</span>
         </div>
         <div className="flex items-center text-gray-600">
           <UserCheck className="w-4 h-4 mr-3 flex-shrink-0 text-primary/80" />
-          <span className="font-medium mr-2">Assigned:</span>
-          <span className="truncate">{caseItem.assignedLawyer || "N/A"}</span>
+          <span className="font-medium mr-2">Created by:</span>
+          <span className="truncate">{caseItem.created_by || "N/A"}</span>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end space-x-2 p-4 border-t bg-gray-50/50">
@@ -111,7 +111,7 @@ export function CaseCard({ caseItem, userType, onStatusUpdate }: CaseCardProps) 
           <Button
             variant="outline"
             size="sm"
-            onClick={(e) => handleActionClick(e, () => router.push(`/dashboard/${userType}/cases/edit/${caseItem.id}`))}
+            onClick={(e) => handleActionClick(e, () => router.push(`/dashboard/${userType}/cases/edit/${caseItem.case_id}`))}
             aria-label="Edit case"
             className="hover:bg-gray-500/10"
           >
@@ -124,7 +124,7 @@ export function CaseCard({ caseItem, userType, onStatusUpdate }: CaseCardProps) 
             variant="outline"
             size="sm"
             className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive/90"
-            onClick={(e) => handleActionClick(e, () => alert(`Delete ${caseItem.id}? This action is not implemented.`))}
+            onClick={(e) => handleActionClick(e, () => alert(`Delete ${caseItem.case_id}? This action is not implemented.`))}
             aria-label="Delete case"
           >
             <Trash2 className="h-4 w-4 mr-1.5" />
