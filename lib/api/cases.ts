@@ -1,13 +1,8 @@
 import { getToken } from "./auth"
-<<<<<<< HEAD
-=======
-
->>>>>>> 166305f52a80a4876868e98e20acc3e0bfb532b3
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
 export async function getAllCases() {
   const token = getToken()
-<<<<<<< HEAD
   if (!token) throw new Error("Token not found")
 
   const res = await fetch(`${API_BASE_URL}/case/cases-need-lawyers`, {
@@ -33,13 +28,6 @@ export async function getAllLawyers() {
   if (!token) throw new Error("Token not found")
 
   const res = await fetch(`${API_BASE_URL}/users/lawyer`, {
-=======
-  if (!token) {
-    throw new Error("Authentication required. Please log in.")
-  }
-
-  const res = await fetch(`${API_BASE_URL}/case/`, {
->>>>>>> 166305f52a80a4876868e98e20acc3e0bfb532b3
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -78,8 +66,6 @@ export async function assignLawyerToCase(caseId: string, lawyerName: string) {
 
   return await res.json()
 }
-<<<<<<< HEAD
-=======
 
 export async function getMyCases() {
   const token = getToken()
@@ -244,4 +230,3 @@ export async function createCase(caseData: CaseCreateData, files: File[]) {
   return result
 }
 
->>>>>>> 166305f52a80a4876868e98e20acc3e0bfb532b3
