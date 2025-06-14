@@ -1,20 +1,39 @@
 "use client"
+import { useEffect, useState } from "react"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { Badge } from "@/components/ui/badge"
-
-// Placeholder for LawyersGrid - you would create this similar to CasesGrid
-// import { LawyersGrid } from "@/components/dashboard/lawyers/lawyers-grid"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { getAllLawyers } from "@/lib/api/lawyer"
 
 export default function AdminLawyersPage() {
-  // Mock data for now
-  const lawyers = [
-    { id: "LWYR001", name: "Alice Smith", specialization: "Human Rights Law", cases: 12, status: "Active" },
-    { id: "LWYR002", name: "Bob Johnson", specialization: "Refugee Law", cases: 8, status: "Active" },
-  ]
+  const [lawyers, setLawyers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+  async function loadLawyers() {
+    try {
+      const data = await getAllLawyers()
+      setLawyers(data)
+    } catch (err) {
+      console.error("Fetch error:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  loadLawyers()
+}, [])
+
+
 
   return (
     <DashboardLayout userType="admin">
@@ -30,22 +49,29 @@ export default function AdminLawyersPage() {
             </Link>
           </Button>
         </div>
-        {/* Replace with <LawyersGrid /> when available */}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lawyers.map((lawyer) => (
-            <Card key={lawyer.id} className="shadow-lg hover:shadow-xl transition-shadow">
-              <CardHeader>
-                <CardTitle>{lawyer.name}</CardTitle>
-                <CardDescription>{lawyer.specialization}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Active Cases: {lawyer.cases}</p>
-                <p>
-                  Status: <Badge>{lawyer.status}</Badge>
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+          {loading ? (
+            <p className="text-gray-500">Loading...</p>
+          ) : lawyers.length === 0 ? (
+            <p className="text-gray-500">No lawyers found.</p>
+          ) : (
+            lawyers.map((lawyer) => (
+              <Card key={lawyer.id} className="shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader>
+                  <CardTitle>{lawyer.username}</CardTitle>
+                  <CardDescription>{lawyer.email}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>Phone: {lawyer.phone || "N/A"}</p>
+                  <p>Preferred Contact: {lawyer.preferred_contact_method || "N/A"}</p>
+                  <p>
+                    Role: <Badge>{lawyer.role}</Badge>
+                  </p>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </DashboardLayout>

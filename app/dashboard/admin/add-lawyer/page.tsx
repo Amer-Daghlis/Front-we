@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { lawyerSchema } from "@/lib/validations/lawyer"
-import { createLawyer } from "@/lib/actions/lawyer.actions"
+import { createLawyer } from "@/lib/api/lawyer"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import type { z } from "zod"
 
@@ -47,7 +47,7 @@ const AddLawyerPage = () => {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout userType="admin">
       <div className="container max-w-4xl py-6">
         <h1 className="text-3xl font-semibold mb-4">Add Lawyer</h1>
         <Form {...form}>
