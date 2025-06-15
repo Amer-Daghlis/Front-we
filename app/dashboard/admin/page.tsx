@@ -7,6 +7,10 @@ import { StatsCards } from "@/components/dashboard/stats-cards"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { getTotalCasesNumber } from "@/lib/api/cases" 
+import {getTotalReportNumber} from "@/lib/api/reports" 
+import { getTotalLawyers } from "@/lib/api/lawyers" 
+import { getTotalOrganizations } from "@/lib/api/organization"
 import {
   FileText,
   Scale,
@@ -29,7 +33,7 @@ export default function AdminDashboard() {
     // ... (stats remain the same)
     {
       title: "Total Cases",
-      value: "156",
+      value: getTotalCasesNumber(),
       change: "+12 this month",
       icon: FileText,
       color: "blue",
@@ -37,7 +41,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Total Reports",
-      value: "289",
+      value: getTotalReportNumber(),
       change: "+23 this week",
       icon: BarChart3,
       color: "green",
@@ -45,7 +49,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Active Lawyers",
-      value: "24",
+      value: getTotalLawyers(),
       change: "+2 this month",
       icon: Scale,
       color: "purple",
@@ -53,7 +57,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Organizations",
-      value: "45",
+      value: getTotalOrganizations(),
       change: "+5 this month",
       icon: Building2,
       color: "orange",

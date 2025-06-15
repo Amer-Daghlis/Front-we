@@ -230,3 +230,30 @@ export async function createCase(caseData: CaseCreateData, files: File[]) {
   return result
 }
 
+
+
+// @router.get("/total",response_model=int, summary="Get total number of cases")
+// async def get_total_cases_number(current_user:str= Depends(get_current_user)):
+//     cases_collection = await get_collection("cases")
+    
+//     # Count the total number of cases
+//     total_cases = await cases_collection.count_documents({})
+    
+//     return total_cases
+
+export async function getTotalCasesNumber() {
+  const token = localStorage.getItem("accessToken")
+  const response = await fetch(`${API_BASE_URL}/case/total`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || "Failed to fetch total cases number")
+  }
+
+  return response.json()
+}
