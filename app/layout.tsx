@@ -3,8 +3,8 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Human Rights',
-  description: 'Created with Amer Daghlis',
-  generator: 'Amer Daghlis',
+  description: 'Created by Amer Daghlis',
+  generator: 'Amer Daghlis the King of the World', 
 }
 
 export default function RootLayout({
