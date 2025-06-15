@@ -1,8 +1,9 @@
 "use client"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { VictimsGrid } from "@/components/dashboard/victims/victims-grid"
+import withAuth from "@/lib/withAuth"
 
-export default function UserAllVictimsPage() {
+function UserAllVictimsPage() {
   return (
     <DashboardLayout userType="user">
       <div className="space-y-6">
@@ -15,3 +16,5 @@ export default function UserAllVictimsPage() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(UserAllVictimsPage)

@@ -4,8 +4,9 @@ import { useEffect, useState } from "react"
 import { getCurrentUser } from "@/lib/api/auth"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { ReportsGrid } from "@/components/dashboard/reports/reports-grid"
+import withAuth from "@/lib/withAuth"
 
-export default function UserMyReportsPage() {
+function UserMyReportsPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -38,3 +39,5 @@ export default function UserMyReportsPage() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(UserMyReportsPage)

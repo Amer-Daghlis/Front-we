@@ -35,6 +35,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"; // Correct import for useRouter in Next.js 13+
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -44,6 +45,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, userType }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter() // Initialize router
 
   const getUserIcon = () => {
     // ... (same as before)
@@ -288,16 +290,15 @@ export function DashboardLayout({ children, userType }: DashboardLayoutProps) {
                   align="end"
                   className="w-56 bg-white/95 backdrop-blur-md border-gray-200/50 shadow-xl rounded-lg mt-1"
                 >
-                  <DropdownMenuItem className="hover:bg-slate-100 transition-colors duration-200 text-sm py-2 px-3">
-                    <User className="mr-2.5 h-4 w-4 text-gray-500" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-slate-100 transition-colors duration-200 text-sm py-2 px-3">
-                    <Settings className="mr-2.5 h-4 w-4 text-gray-500" />
-                    Settings
-                  </DropdownMenuItem>
+                  
                   <DropdownMenuSeparator className="bg-gray-200/70" />
-                  <DropdownMenuItem className="text-red-600 hover:bg-red-50/70 hover:!text-red-700 transition-colors duration-200 text-sm py-2 px-3">
+                  <DropdownMenuItem
+                    className="text-red-600 hover:bg-red-50/70 hover:!text-red-700 transition-colors duration-200 text-sm py-2 px-3"
+                    onClick={() => {
+                      localStorage.removeItem("accessToken"); // Remove JWT from local storage
+                      router.push("/sign-in"); // Redirect to sign-in page
+                    }}
+                  >
                     <LogOut className="mr-2.5 h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>

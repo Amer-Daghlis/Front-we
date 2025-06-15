@@ -4,8 +4,9 @@ import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { CasesGrid } from "@/components/dashboard/cases/cases-grid"
 import { StatusUpdateModal } from "@/components/dashboard/status-update-modal"
 import { getCasesForLawyer } from "@/lib/api/cases"
+import withAuth from "@/lib/withAuth"
 
-export default function LawyerCasesPage() {
+function LawyerCasesPage() {
   const [showStatusUpdate, setShowStatusUpdate] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const [cases, setCases] = useState([])
@@ -64,3 +65,5 @@ export default function LawyerCasesPage() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(LawyerCasesPage)

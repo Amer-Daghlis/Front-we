@@ -1,8 +1,9 @@
 "use client"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { CasesGrid } from "@/components/dashboard/cases/cases-grid"
+import withAuth from "@/lib/withAuth"
 
-export default function OrganizationAllCasesPage() {
+function OrganizationAllCasesPage() {
   return (
     <DashboardLayout userType="organization">
       <div className="space-y-6">
@@ -13,3 +14,5 @@ export default function OrganizationAllCasesPage() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(OrganizationAllCasesPage)

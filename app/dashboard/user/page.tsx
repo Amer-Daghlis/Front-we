@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Plus, FileText, Users, Shield, Phone, Download, Clock, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import withAuth from "@/lib/withAuth"
 
-export default function UserDashboard() {
+function UserDashboard() {
   const stats = [
     {
       title: "My Reports",
@@ -170,3 +171,5 @@ export default function UserDashboard() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(UserDashboard)

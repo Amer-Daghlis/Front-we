@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { StatsCards } from "@/components/dashboard/stats-cards"
 // Import grids for lawyers, orgs, users when available
@@ -25,45 +25,65 @@ import {
   Activity,
 } from "lucide-react"
 import Link from "next/link"
+import withAuth from "@/lib/withAuth"
+import type { Stat } from "@/components/dashboard/stats-cards"
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState("overview") // Default to overview
+  const [resolvedStats, setResolvedStats] = useState<Stat[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const stats = [
-    // ... (stats remain the same)
-    {
-      title: "Total Cases",
-      value: getTotalCasesNumber(),
-      change: "+12 this month",
-      icon: FileText,
-      color: "blue",
-      trend: "+8.3%",
-    },
-    {
-      title: "Total Reports",
-      value: getTotalReportNumber(),
-      change: "+23 this week",
-      icon: BarChart3,
-      color: "green",
-      trend: "+15.2%",
-    },
-    {
-      title: "Active Lawyers",
-      value: getTotalLawyers(),
-      change: "+2 this month",
-      icon: Scale,
-      color: "purple",
-      trend: "+9.1%",
-    },
-    {
-      title: "Organizations",
-      value: getTotalOrganizations(),
-      change: "+5 this month",
-      icon: Building2,
-      color: "orange",
-      trend: "+12.5%",
-    },
-  ]
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const stats: Stat[] = [
+          {
+            title: "Total Cases",
+            value: (await getTotalCasesNumber()).toString(),
+            change: "+12 this month",
+            icon: FileText,
+            color: "blue",
+            trend: "+8.3%",
+          },
+          {
+            title: "Total Reports",
+            value: (await getTotalReportNumber()).toString(),
+            change: "+23 this week",
+            icon: BarChart3,
+            color: "green",
+            trend: "+15.2%",
+          },
+          {
+            title: "Active Lawyers",
+            value: (await getTotalLawyers()).toString(),
+            change: "+2 this month",
+            icon: Scale,
+            color: "purple",
+            trend: "+9.1%",
+          },
+          {
+            title: "Organizations",
+            value: (await getTotalOrganizations()).toString(),
+            change: "+5 this month",
+            icon: Building2,
+            color: "orange",
+            trend: "+12.5%",
+          },
+        ]
+        setResolvedStats(stats)
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
+  if (loading) {
+    return <div>Loading...</div> // Show a loading state while stats are being resolved
+  }
 
   const pendingAssignments = [
     // ... (mock data remains the same)
@@ -124,7 +144,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <StatsCards stats={stats} />
+        <StatsCards stats={resolvedStats} />
 
         {/* Quick Actions - these could link to the new dedicated pages */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 animate-slideInUp animation-delay-600">
@@ -258,3 +278,5 @@ export default function AdminDashboard() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(AdminDashboard);

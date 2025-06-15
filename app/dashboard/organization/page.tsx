@@ -5,8 +5,9 @@ import { CasesGrid } from "@/components/dashboard/cases/cases-grid"
 import { Button } from "@/components/ui/button"
 import { Plus, FileText, Users, AlertTriangle, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import withAuth from "@/lib/withAuth"
 
-export default function OrganizationDashboard() {
+function OrganizationDashboard() {
   const stats = [
     { title: "My Cases", value: "12", icon: FileText, color: "blue" },
     { title: "Active Investigations", value: "8", icon: AlertTriangle, color: "orange" },
@@ -52,3 +53,5 @@ export default function OrganizationDashboard() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(OrganizationDashboard)

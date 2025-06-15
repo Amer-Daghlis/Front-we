@@ -1,8 +1,9 @@
 "use client"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { ReportsGrid } from "@/components/dashboard/reports/reports-grid"
+import withAuth from "@/lib/withAuth"
 
-export default function OrganizationAllReportsPage() {
+function OrganizationAllReportsPage() {
   return (
     <DashboardLayout userType="organization">
       <div className="space-y-6">
@@ -13,3 +14,5 @@ export default function OrganizationAllReportsPage() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(OrganizationAllReportsPage)

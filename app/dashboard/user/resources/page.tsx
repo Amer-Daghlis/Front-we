@@ -1,12 +1,13 @@
 "use client"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import Link from "next/link"
+import withAuth from "@/lib/withAuth"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Phone, Download, FileText, Users, Shield, BookOpen } from "lucide-react"
 
-export default function UserResourcesPage() {
+function UserResourcesPage() {
   return (
     <DashboardLayout userType="user">
       <div className="space-y-8 animate-fadeIn">
@@ -116,3 +117,5 @@ export default function UserResourcesPage() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(UserResourcesPage)

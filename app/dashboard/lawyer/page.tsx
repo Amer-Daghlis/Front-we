@@ -8,8 +8,9 @@ import { StatusUpdateModal } from "@/components/dashboard/status-update-modal"
 import { FileText, Clock, CheckCircle, AlertTriangle, Scale, Award, Target } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import withAuth from "@/lib/withAuth"
 
-export default function LawyerDashboard() {
+function LawyerDashboard() {
   const [showStatusUpdate, setShowStatusUpdate] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any>(null)
   const lawyerId = "LAWYER001"
@@ -120,3 +121,5 @@ export default function LawyerDashboard() {
     </DashboardLayout>
   )
 }
+
+export default withAuth(LawyerDashboard);

@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import type { LucideIcon } from "lucide-react"
 import { TrendingUp, TrendingDown } from "lucide-react"
 
-interface Stat {
+export interface Stat {
   title: string
   value: string
   change?: string // Made optional

@@ -5,8 +5,9 @@ import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { CasesGrid } from "@/components/dashboard/cases/cases-grid";
 import { getAllCases } from "@/lib/api/cases";
 import type { Case } from "@/types/dashboard-item-types";
+import withAuth from "@/lib/withAuth";
 
-export default function UserAllCasesPage() {
+function UserAllCasesPage() {
   const [cases, setCases] = useState<Case[]>([]);
   const [error, setError] = useState("");
 
@@ -39,3 +40,5 @@ export default function UserAllCasesPage() {
     </DashboardLayout>
   );
 }
+
+export default withAuth(UserAllCasesPage);
