@@ -20,10 +20,9 @@ import {
   Phone,
   Mail,
   Globe,
-  Clock,
 } from "lucide-react"
 import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import { useState, useEffect } from "react"
 
 // Type definitions based on your API response
@@ -63,84 +62,185 @@ interface IncidentReport {
   created_by: string
 }
 
+interface UserInfo {
+  username?: string
+  email?: string
+  id?: string
+  [key: string]: any
+}
+
 const ReportPage = ({ params }: { params: { id: string } }) => {
   const reportId = params.id
-  const router = useRouter()
 
   const [report, setReport] = useState<IncidentReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userType, setUserType] = useState<"organization" | "user" | "lawyer" | "admin">("user")
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
 
-  const fetchReportDetails = async () => {
-    try {
-      setLoading(true)
+  // Get authentication token from various possible storage locations
+  const getAuthToken = () => {
+    const possibleKeys = ['token', 'authToken', 'access_token', 'jwt', 'accessToken']
 
-      // Get current user and determine user type from localStorage or context
-      const currentUser = getCurrentUser()
-      const currentUserType = getUserType()
-      setUserType(currentUserType)
-
-      // Fetch all reports for the user to find the specific report
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/report/`, {
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch reports: ${response.statusText}`)
+    for (const key of possibleKeys) {
+      const token = localStorage.getItem(key)
+      if (token && token.length > 10) {
+        console.log(`🔐 Found token in '${key}':`, token.substring(0, 20) + '...')
+        return token
       }
-
-      const reports = await response.json()
-      const foundReport = reports.find((r: IncidentReport) => r.report_id === reportId)
-
-      if (!foundReport) {
-        // Try fetching by username if not found in general reports
-        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/report/${currentUser}`, {
-          headers: {
-            'Authorization': `Bearer ${getAuthToken()}`,
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (userResponse.ok) {
-          const userReports = await userResponse.json()
-          const userReport = userReports.find((r: IncidentReport) => r.report_id === reportId)
-          if (userReport) {
-            setReport(userReport)
-            return
-          }
-        }
-
-        setError('Report not found')
-        return
-      }
-
-      setReport(foundReport)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch report details')
-    } finally {
-      setLoading(false)
     }
-  }
 
-  // Helper functions - implement these based on your auth system
-  const getCurrentUser = () => {
-    return localStorage.getItem('username') || 'user'
+    console.log('🔐 No valid token found in localStorage')
+    return null
   }
 
   const getUserType = (): "organization" | "user" | "lawyer" | "admin" => {
-    const role = localStorage.getItem('userRole') || 'user'
+    const role = localStorage.getItem('userRole') ||
+      localStorage.getItem('role') ||
+      'user'
     if (['organization', 'user', 'lawyer', 'admin'].includes(role)) {
       return role as "organization" | "user" | "lawyer" | "admin"
     }
     return 'user'
   }
 
-  const getAuthToken = () => {
-    return localStorage.getItem('token') || ''
+  const getApiBaseUrl = () => {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
+  }
+
+  // Fetch current user info from /users/me endpoint
+  const fetchUserInfo = async (): Promise<UserInfo | null> => {
+    try {
+      const token = getAuthToken()
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const baseUrl = getApiBaseUrl()
+      const response = await fetch(`${baseUrl}/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user info: ${response.status} ${response.statusText}`)
+      }
+
+      const userData = await response.json()
+      console.log('👤 User info from /users/me:', userData)
+
+      setUserInfo(userData)
+      return userData
+
+    } catch (error: any) {
+      console.error('❌ Failed to fetch user info:', error)
+      throw error
+    }
+  }
+
+  // Get the correct username for API calls
+  const getUsername = (userData: UserInfo | null): string => {
+    if (userData) {
+      return userData.username ||
+        userData.email ||
+        userData.id ||
+        'unknown'
+    }
+
+    return localStorage.getItem('username') ||
+      localStorage.getItem('user') ||
+      'unknown'
+  }
+
+  const fetchReportDetails = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Get user info and determine user type
+      const currentUserType = getUserType()
+      setUserType(currentUserType)
+
+      let userData: UserInfo | null = null
+      try {
+        userData = await fetchUserInfo()
+      } catch (authError: any) {
+        setError(`Authentication failed: ${authError.message}. Please log in again.`)
+        return
+      }
+
+      const token = getAuthToken()
+      if (!token) {
+        setError("No authentication token found. Please log in again.")
+        return
+      }
+
+      const baseUrl = getApiBaseUrl()
+      const username = getUsername(userData)
+
+      console.log(`🔍 Looking for report ${reportId} for user ${username}`)
+
+      // Try to fetch the user's reports first
+      let reports: IncidentReport[] = []
+
+      try {
+        // First try to get user-specific reports
+        const userReportsResponse = await fetch(`${baseUrl}/report/${username}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (userReportsResponse.ok) {
+          reports = await userReportsResponse.json()
+          console.log(`📊 Found ${reports.length} reports for user ${username}`)
+        } else if (userReportsResponse.status !== 404) {
+          // If it's not a 404 (no reports), it might be another error
+          console.log(`⚠️ User reports fetch failed with status ${userReportsResponse.status}`)
+        }
+      } catch (err) {
+        console.log(`⚠️ Failed to fetch user reports, trying all reports`)
+      }
+
+      // If no reports found for user, or if we're an admin/lawyer, try to get all reports
+      if (reports.length === 0 && (currentUserType === 'admin' || currentUserType === 'lawyer')) {
+        try {
+          const allReportsResponse = await fetch(`${baseUrl}/report/`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+
+          if (allReportsResponse.ok) {
+            reports = await allReportsResponse.json()
+            console.log(`📊 Found ${reports.length} total reports`)
+          }
+        } catch (err) {
+          console.log(`⚠️ Failed to fetch all reports`)
+        }
+      }
+
+      // Find the specific report
+      const foundReport = reports.find((r: IncidentReport) => r.report_id === reportId)
+
+      if (!foundReport) {
+        setError(`Report ${reportId} not found. You may not have access to this report.`)
+        return
+      }
+
+      console.log(`✅ Found report:`, foundReport)
+      setReport(foundReport)
+
+    } catch (err) {
+      console.error('❌ Error fetching report:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch report details')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -232,11 +332,6 @@ const ReportPage = ({ params }: { params: { id: string } }) => {
               </Card>
             ))}
           </div>
-          <Card className="border-0 shadow-xl">
-            <CardContent className="p-6">
-              <Skeleton className="h-32 w-full" />
-            </CardContent>
-          </Card>
         </div>
       </DashboardLayout>
     )
@@ -253,8 +348,13 @@ const ReportPage = ({ params }: { params: { id: string } }) => {
                 {error || 'Report Not Found'}
               </h3>
               <p className="text-red-700 mb-6">
-                The report you're looking for doesn't exist or you don't have access to it.
+                {error || "The report you're looking for doesn't exist or you don't have access to it."}
               </p>
+              {userInfo && (
+                <p className="text-sm text-red-600 mb-4">
+                  Logged in as: {getUsername(userInfo)}
+                </p>
+              )}
               <Link href={getBackLink()}>
                 <Button variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -448,10 +548,6 @@ const ReportPage = ({ params }: { params: { id: string } }) => {
                         <span className="text-sm text-gray-700">
                           Coordinates: {report.incident_details.location.coordinates.coordinates.join(', ')}
                         </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Phone className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm text-gray-700">24/7 support available</span>
                       </div>
                     </div>
                   </div>
