@@ -7,7 +7,6 @@ import { CasesGrid } from "@/components/dashboard/cases/cases-grid"
 import { StatusUpdateModal } from "@/components/dashboard/status-update-modal"
 import { FileText, Clock, CheckCircle, AlertTriangle, Scale, Award, Target } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { ReportsGrid } from "@/components/dashboard/reports/reports-grid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function LawyerDashboard() {
@@ -24,14 +23,7 @@ export default function LawyerDashboard() {
       color: "blue",
       trend: "+25%",
     },
-    {
-      title: "Assigned Reports",
-      value: "23",
-      change: "+5 this week",
-      icon: FileText,
-      color: "green",
-      trend: "+28%",
-    },
+   
     {
       title: "Pending Review",
       value: "8",
@@ -101,18 +93,12 @@ export default function LawyerDashboard() {
 
         <div className="animate-slideInUp animation-delay-600">
           <Tabs defaultValue="assigned-cases" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 bg-white/80 shadow-md rounded-xl p-1.5 border-0 backdrop-blur-sm">
+            <TabsList className="grid w-full grid-cols-1 bg-white/80 shadow-md rounded-xl p-1.5 border-0 backdrop-blur-sm">
               <TabsTrigger
                 value="assigned-cases"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 rounded-lg font-medium hover:bg-slate-200/70 py-2"
               >
                 Assigned Cases
-              </TabsTrigger>
-              <TabsTrigger
-                value="assigned-reports"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 rounded-lg font-medium hover:bg-slate-200/70 py-2"
-              >
-                Assigned Reports
               </TabsTrigger>
             </TabsList>
 
@@ -122,15 +108,6 @@ export default function LawyerDashboard() {
                 showOnlyOwn={true}
                 currentUserId={lawyerId}
                 onStatusUpdate={(item) => handleStatusUpdate(item, "case")}
-              />
-            </TabsContent>
-
-            <TabsContent value="assigned-reports">
-              <ReportsGrid
-                userType="lawyer"
-                showOnlyOwn={true}
-                currentUserId={lawyerId}
-                onStatusUpdate={(item) => handleStatusUpdate(item, "report")}
               />
             </TabsContent>
           </Tabs>

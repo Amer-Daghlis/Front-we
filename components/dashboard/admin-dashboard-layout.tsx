@@ -27,6 +27,7 @@ import {
   User,
   BarChart3,
   Gavel,
+  ChartAreaIcon,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -76,12 +77,7 @@ export function AdminDashboardLayout({ children }: AdminDashboardLayoutProps) {
       icon: Building2,
       current: pathname.includes("/organizations"),
     },
-    {
-      name: "Users",
-      href: "/dashboard/admin/users",
-      icon: Users,
-      current: pathname.includes("/users"),
-    },
+    
     {
       name: "Analytics",
       href: "/dashboard/admin/analytics",
@@ -89,9 +85,9 @@ export function AdminDashboardLayout({ children }: AdminDashboardLayoutProps) {
       current: pathname.includes("/analytics"),
     },
     {
-      name: "Settings",
-      href: "/dashboard/admin/settings",
-      icon: Settings,
+      name: "Diagrams",
+      href: "/dashboard/admin/diagrams",
+      icon: ChartAreaIcon,
       current: pathname.includes("/settings"),
     },
   ]

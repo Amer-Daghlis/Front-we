@@ -11,7 +11,7 @@ export function Navbar() {
           <div className="flex items-center space-x-2 group">
             <Shield className="h-8 w-8 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
             <span className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-300">
-              HumanWatch
+              Human Rights
             </span>
           </div>
 

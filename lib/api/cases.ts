@@ -158,23 +158,26 @@ export async function deleteCase(caseId: string) {
 }
 
 export async function updateCaseStatus(caseId: string, newStatus: string) {
-  const token = localStorage.getItem("accessToken")
+  const token = getToken()
+
   const response = await fetch(`${API_BASE_URL}/case/${caseId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ new_status: newStatus }),
+    body: JSON.stringify({ new_status: newStatus }), // ✅ This must match the Pydantic model
   })
 
+  const data = await response.json()
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.detail || "Failed to update case status")
+    console.error("Update failed:", data)
+    throw new Error(data.detail || "Failed to update case status")
   }
 
-  return response.json()
+  return data
 }
+
 
 export type CaseCreateData = {
   title: string
@@ -257,3 +260,22 @@ export async function getTotalCasesNumber() {
 
   return response.json()
 }
+export async function getCasesForLawyer() {
+  const token = getToken()
+  const res = await fetch(`${API_BASE_URL}/case/lawyer`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.detail || "Failed to fetch cases for lawyer")
+  }
+
+  return res.json()
+}
+
+

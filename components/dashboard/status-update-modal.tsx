@@ -1,65 +1,63 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react" // Added useEffect
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { X } from "lucide-react"
+import { updateCaseStatus } from "@/lib/api/cases"
 
 interface StatusUpdateModalProps {
   open: boolean
   onClose: () => void
-  item: any // Should be Case or Report type
+  item: any
 }
 
 export function StatusUpdateModal({ open, onClose, item }: StatusUpdateModalProps) {
   const [newStatus, setNewStatus] = useState("")
-  const [notes, setNotes] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (item) {
-      setNewStatus(item.status || "") // Initialize with current status if available
-      setNotes("") // Reset notes when item changes
+      setNewStatus(item.status || "")
     }
   }, [item])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your submission logic here, e.g., API call
-    console.log("Status updated:", { itemId: item.id, newStatus, notes })
-    onClose() // Close modal after submission
+    try {
+      setLoading(true)
+      setError(null)
+      console.log("Submitting update for case ID:", item.id) // Debugging the ID
+      await updateCaseStatus(item.id, newStatus)
+      onClose()
+    } catch (err) {
+      if (err && typeof err === "object" && "message" in err) {
+        setError((err as { message: string }).message || "Error updating status")
+      } else {
+        setError("Error updating status")
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!item) return null
 
-  // Determine if it's a case or report to provide relevant status options
-  // This is a simplified check; you might have a 'type' field on the item or pass it as a prop
-  const isCase = item.priority !== undefined && item.assignedLawyer !== undefined // Heuristic
+  const isCase = item.priority !== undefined && item.assignedLawyer !== undefined
   const itemType = isCase ? "case" : "report"
 
-  const getStatusOptions = () => {
-    if (itemType === "case") {
-      return [
-        { value: "Open", label: "Open" },
-        { value: "In Progress", label: "In Progress" },
-        { value: "Pending Review", label: "Pending Review" },
-        { value: "Resolved", label: "Resolved" },
-        { value: "Closed", label: "Closed" },
-      ]
-    } else {
-      // Assuming Report status types
-      return [
-        { value: "Pending Review", label: "Pending Review" },
-        { value: "Under Investigation", label: "Under Investigation" },
-        { value: "Action Taken", label: "Action Taken" },
-        { value: "Closed", label: "Closed" },
-      ]
-    }
-  }
+const getStatusOptions = () => {
+  return [
+    { value: "under_investigation", label: "Under Investigation" },
+    { value: "resolved", label: "Resolved" },
+    { value: "closed", label: "Closed" },
+  ]
+}
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -99,22 +97,15 @@ export function StatusUpdateModal({ open, onClose, item }: StatusUpdateModalProp
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Update Notes</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about this status update..."
-                rows={4}
-              />
-            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
 
             <div className="flex justify-end space-x-3 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit">Update Status</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Updating..." : "Update Status"}
+              </Button>
             </div>
           </form>
         </div>

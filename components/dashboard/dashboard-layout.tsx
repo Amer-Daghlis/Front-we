@@ -30,6 +30,8 @@ import {
   Gavel,
   UserPlus,
   BookOpen,
+  ChartArea,
+  
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -189,7 +191,12 @@ export function DashboardLayout({ children, userType }: DashboardLayoutProps) {
           icon: Building2,
           current: pathname.startsWith(`${baseHref}/organizations`),
         },
-        { name: "Users", href: `${baseHref}/users`, icon: Users, current: pathname.startsWith(`${baseHref}/users`) },
+        {
+          name: "Diagrams",
+          href: `${baseHref}/diagrams`,
+          icon: ChartArea, 
+          current: pathname.startsWith(`${baseHref}/diagrams`),
+        },
         {
           name: "Assignments",
           href: `${baseHref}/assignments`,
