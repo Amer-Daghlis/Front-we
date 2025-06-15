@@ -231,7 +231,7 @@ export function DashboardLayout({ children, userType }: DashboardLayoutProps) {
               <Link href="/" className="flex items-center space-x-2 ml-4 lg:ml-0 group">
                 <Shield className="h-8 w-8 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
                 <span className="text-xl font-bold text-gray-800 group-hover:text-blue-700 transition-colors duration-300">
-                  HumanWatch
+                  Human Rights
                 </span>
               </Link>
             </div>
