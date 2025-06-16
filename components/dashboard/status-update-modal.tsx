@@ -54,7 +54,7 @@ export function StatusUpdateModal({ open, onClose, item }: StatusUpdateModalProp
 const getStatusOptions = () => {
   return [
     { value: "under_investigation", label: "Under Investigation" },
-    { value: "resolved", label: "Resolved" },
+    { value: "escalated", label: "Escalated" },
     { value: "closed", label: "Closed" },
   ]
 }
